@@ -54,3 +54,8 @@
     Ako atime ne treba da učestvuje: bcmBM:1d (B=birth, M=mtime za direktorijume).
     btime se ne može postaviti touch-om, pa svež direktorijum ne može biti
     obrisan pre nego što mu prođe ceo prag.
+
+## e linija — šta ostaje
+    Direktorijum iz same linije se NIKAD ne briše (samo mu se štima mode/owner
+    i čisti sadržaj). Dokazano: e /tmp/tf2/d - - - 0 -> /tmp/tf2/d ostaje,
+    a a/b nestaju kaskadno jer su prazni.
