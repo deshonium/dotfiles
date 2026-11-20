@@ -44,3 +44,13 @@
     --dry-run ne uzima BSD flock i ne izvršava unlinkat, pa uvek prikazuje
     kandidate koje pravi run može preskočiti (lock ili ENOTEMPTY).
     Log "age-by: bcmABM" = bcm za fajlove + ABM (default) za direktorijume.
+
+## e linija — drugi uslov za direktorijum
+    Brisanje zahteva da SVI traženi timestampovi budu stariji od praga;
+    bilo koji svež timestamp odlaže brisanje ("any ... will prevent cleanup").
+    Za direktorijume se podrazumevano koriste ABM (atime, btime, mtime), pa:
+      - svež atime (npr. ls) odlaže brisanje direktorijuma
+      - rm fajla bump-uje mtime roditelja -> direktorijum kasni jedan ciklus
+    Ako atime ne treba da učestvuje: bcmBM:1d (B=birth, M=mtime za direktorijume).
+    btime se ne može postaviti touch-om, pa svež direktorijum ne može biti
+    obrisan pre nego što mu prođe ceo prag.
