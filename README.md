@@ -5,6 +5,10 @@
     sudo cp etc/systemd/coredump.conf.d/90-nodump.conf /etc/systemd/coredump.conf.d/
     systemd-analyze cat-config systemd/coredump.conf | grep -E 'Storage|ProcessSizeMax'
 
+## config/ — user-owned
+    mkdir -p ~/.config/user-tmpfiles.d
+    cp config/user-tmpfiles.d/cache.conf ~/.config/user-tmpfiles.d/
+
 ## local/bin/
     cp local/bin/cache-clean.sh ~/.local/bin/ && chmod +x ~/.local/bin/cache-clean.sh
 
@@ -12,3 +16,15 @@
 1. ~/.config/spotify/prefs      storage.size=1024   (klijent ga ignoriše)
 2. cache-clean.sh               prune_to 800/150 MB (stvarni cap, dnevni tajmer)
 3. user-tmpfiles.d/cache.conf   bcm:1d              (starosna mreža)
+
+## tmpfiles age-by sintaksa
+    bcm:1d      mala slova = timestampi FAJLOVA (birth, ctime, mtime)
+    bcmABM:30d  velika slova = timestampi DIREKTORIJUMA (atime, birth, mtime)
+    default je abcmABM — uključuje atime fajlova, pa čitanje produžava život fajla
+    'bcm' namerno izbacuje 'a': preslušavanje ne sme da podmladi keš
+
+## Pažnja: offline slušanje
+    Ako uključite offline, skinuti delovi idu u ~/.cache/spotify/Storage.
+    Tada `Storage bcm:1d` briše offline sadržaj svakog dana — podignite na
+    bcm:30d ili uklonite tu liniju. Danas je unutra samo index.dat (7.6K),
+    koji se prepisuje pri svakom pokretanju, pa linija praktično ne radi ništa.
