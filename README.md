@@ -28,3 +28,19 @@
     Tada `Storage bcm:1d` briše offline sadržaj svakog dana — podignite na
     bcm:30d ili uklonite tu liniju. Danas je unutra samo index.dat (7.6K),
     koji se prepisuje pri svakom pokretanju, pa linija praktično ne radi ništa.
+
+## systemd user tajmeri (oba su deo rešenja)
+    systemctl --user enable --now cache-clean.timer
+    systemctl --user enable --now systemd-tmpfiles-clean.timer
+    # tmpfiles: upstream timer; OnStartupSec=5min (elapsira odmah ako je prošlo),
+    # OnUnitActiveSec=1d (monotonično; sat staje u suspenziji). Bez Persistent=
+    # jer on radi samo uz OnCalendar=. Pre 20.11. je bio 'disabled'.
+
+## e linija — šta stvarno briše
+    e briše FAJLOVE pojedinačno (po age-by), a (pod)direktorijum samo kad
+    ostane prazan: unlinkat(AT_REMOVEDIR) na neprazan vraća ENOTEMPTY i to
+    se tiho preskače. Zato npr. GPUPersistentCache ne može da nestane dok
+    Spotify drži svež cache.db-wal unutra.
+    --dry-run ne uzima BSD flock i ne izvršava unlinkat, pa uvek prikazuje
+    kandidate koje pravi run može preskočiti (lock ili ENOTEMPTY).
+    Log "age-by: bcmABM" = bcm za fajlove + ABM (default) za direktorijume.
