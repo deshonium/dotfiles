@@ -23,7 +23,7 @@ prune_to() {  # prune_to <dir> <max_mb>
   log "prune: ${dir/#$HOME/~} ${curmb}MB > ${maxmb}MB - brisem najstarije ~$(( excess / 1048576 ))MB"
   { find "$dir" -type f -printf '%T@ %s %p\0' 2>/dev/null | LC_ALL=C sort -z -n |
     awk -v ex="$excess" 'BEGIN{RS="\0";ORS="\0";cum=0}
-      { q=$0; sub(/^[^ ]+ +[0-9]+ +/,"",q); cum+=$2; if (cum<=ex) printf "%s\0", q }' |
+      { q=$0; sub(/^[^ ]+ +[0-9]+ +/,"",q); if (cum < ex) { cum+=$2; printf "%s\0", q } }' |
     while IFS= read -r -d '' f; do rm -f -- "$f"; done ; } || true
   after=$(du -sm -- "$dir" 2>/dev/null | cut -f1) || true
   log "prune: ${dir/#$HOME/~} ${before}MB -> ${after:-?}MB"

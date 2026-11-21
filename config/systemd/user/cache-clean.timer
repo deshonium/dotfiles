@@ -1,0 +1,11 @@
+[Unit]
+Description=Dnevno čišćenje keša
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=15min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

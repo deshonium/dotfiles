@@ -1,0 +1,9 @@
+[Unit]
+Description=Spotify keš: prune_to granica veličine
+Documentation=file://%h/dotfiles/README.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/cache-clean.sh
+Nice=10
+IOSchedulingClass=idle
