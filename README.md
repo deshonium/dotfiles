@@ -59,3 +59,10 @@
     Direktorijum iz same linije se NIKAD ne briše (samo mu se štima mode/owner
     i čisti sadržaj). Dokazano: e /tmp/tf2/d - - - 0 -> /tmp/tf2/d ostaje,
     a a/b nestaju kaskadno jer su prazni.
+
+## restore — systemd uniti
+    cp config/systemd/user/cache-clean.{service,timer} ~/.config/systemd/user/
+    systemctl --user daemon-reload
+    systemctl --user enable --now cache-clean.timer systemd-tmpfiles-clean.timer
+    # provera: systemctl --user list-timers 'cache-clean*' 'systemd-tmpfiles*' --all
+    # Description je 'Spotify keš: prune_to granica veličine' (ne tmpfiles)
