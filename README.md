@@ -50,7 +50,10 @@
     bilo koji svež timestamp odlaže brisanje ("any ... will prevent cleanup").
     Za direktorijume se podrazumevano koriste ABM (atime, btime, mtime), pa:
       - svež atime (npr. ls) odlaže brisanje direktorijuma
-      - rm fajla bump-uje mtime roditelja -> direktorijum kasni jedan ciklus
+      - rm fajla bump-uje mtime roditelja, ali SAM tmpfiles to ponistava:
+        futimens() vraca snimljene atime/mtime na kraju obrade direktorijuma
+        (log 'Would restore/Restoring ... access and modification time').
+        Zato njegova brisanja ne odlazu roditelja; samo spoljni rm to radi.
     Ako atime ne treba da učestvuje: bcmBM:1d (B=birth, M=mtime za direktorijume).
     btime se ne može postaviti touch-om, pa svež direktorijum ne može biti
     obrisan pre nego što mu prođe ceo prag.
@@ -87,3 +90,9 @@
     prag 1d predjen 07:33; najstariji preziveli 21.11 11:50).
     Prag 1d drzi kes na ~110MB -> prune_to (800MB) se nikad ne aktivira.
     Odluka: bcm:3d (balans) ili bcm:7d (cap postaje primaran).
+
+## odluka 22.11.2026: Data bcm:3d
+    Data: bcm:1d -> bcm:3d (kes ~110MB je bio preagresivno; 3d ~300-400MB).
+    Dry-run potvrdio: nula kandidata u Data (najstariji 21.11 11:50,
+    prag istice 24.11 11:50). Jedini kandidat: GPUPersistentCache/GPUCache.
+    prune_to (800MB) ostaje rezerva - relevantan samo ako 3 dana >800MB.
