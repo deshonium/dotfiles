@@ -66,3 +66,24 @@
     systemctl --user enable --now cache-clean.timer systemd-tmpfiles-clean.timer
     # provera: systemctl --user list-timers 'cache-clean*' 'systemd-tmpfiles*' --all
     # Description je 'Spotify keš: prune_to granica veličine' (ne tmpfiles)
+
+## journal: odsustvo "Removing" NIJE dokaz da nista nije obrisano
+    tmpfiles loguje stvarno brisanje na DEBUG nivou:
+      log_action("Would remove", "Removing", ...) ->
+      log_full(arg_dry_run ? LOG_INFO : LOG_DEBUG, ...)
+    Dokazano 21/22.11.2026: 0 linija "Removing", a Data 753MB -> 110MB.
+    Meri se efektom (du pre/posle, najstariji mtime), ne brojem log linija.
+
+## tmpfiles user tajmer: "Daily" je netacno, radi na svaki boot
+    /usr/lib/systemd/user/systemd-tmpfiles-clean.timer je verbatim upstream:
+      [Timer] OnStartupSec=5min ; OnUnitActiveSec=1d
+    (system varijanta ima OnBootSec=15min - nije ovo.)
+    OnStartupSec opali 5 min posle svakog starta user manager-a, a
+    OnUnitActiveSec=1d se meri od poslednje aktivacije -> svaki boot
+    pomeri NEXT za 24h, pa 1d prakticno nikad ne istekne.
+    Izmereno: runovi 21.11 11:55:27, 21.11 21:20:49, 22.11 04:26:09,
+    22.11 06:19:55 (uptime -s = 06:14:35) - svaki boot + 5 min.
+    Brisanje 753->110MB desilo se u 11:55:27 (fajlovi od 20.11 07:33,
+    prag 1d predjen 07:33; najstariji preziveli 21.11 11:50).
+    Prag 1d drzi kes na ~110MB -> prune_to (800MB) se nikad ne aktivira.
+    Odluka: bcm:3d (balans) ili bcm:7d (cap postaje primaran).
