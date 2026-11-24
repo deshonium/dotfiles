@@ -31,7 +31,7 @@ prune_to() {  # prune_to <dir> <max_mb>
 
 
 CACHE="${XDG_CACHE_HOME:-$HOME/.cache}"
-DRY=0
+DRY=${DRY:-0}
 QUIT_SPOTIFY=1
 
 for a in "$@"; do
@@ -43,6 +43,7 @@ for a in "$@"; do
 done
 
 log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*"; }
+if (( DRY )); then log "rezim: DRY-RUN - nista se ne brise"; else log "rezim: izvrsavanje"; fi
 hsz() { numfmt --to=iec-i --suffix=B "$1" 2>/dev/null || printf '%sB\n' "$1"; }
 du_m() { local v; v=$(du -sm -- "$1" 2>/dev/null | cut -f1) || true; printf "%s" "${v:-0}"; }
 
@@ -97,7 +98,6 @@ before=$(total)
 log "pre: $(hsz "$before")"
 
 if (( DRY )); then
-  log "DRY-RUN - nista se ne brise"
   prune_to "$CACHE/spotify/Data"           850
   prune_to "$CACHE/spotify/Browser/Cache"  150
   rc=0

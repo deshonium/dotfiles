@@ -136,3 +136,37 @@
     du_m(), prune_to: du -sm (zauzeti blokovi, MiB) - uporedivo.
     total(): du -sb po 6 direktorijuma, apparent bajtovi -> "pre:"/"posle:"
     NIJE uporedivo sa per-dir MiB linijama.
+
+## 24.11.2026 - INCIDENT: DRY=1 nije dry-run, obrisao 210MB
+    `DRY=1 ~/.local/bin/cache-clean.sh` -> skript je BRISAO.
+    Uzrok: `DRY=0` bezuslovno pregazi env; ulaz je bio ISKLJUCIVO argument
+    --dry-run / -n. Posledica: Data 1042->849, Browser/Cache 36->18,
+    5 ostalih kesa ~17MB (~210MiB). Samo kes, Spotify nije radio.
+    POPRAVKA: `DRY=${DRY:-0}` (linija 34) + `log "rezim: ..."` (linija 46).
+
+## 24.11.2026 - sed -i je razbio symlink
+    `sed -i` na symlinku pravi temp fajl i rename-uje preko njega ->
+    symlink postaje regularan fajl. Posledica: dve kopije sa po POLOVINOM
+    popravke. Dijagnoza: `readlink -f` vratio sopstvenu putanju.
+    PRAVILO: menjati samo ~/dotfiles/local/bin/cache-clean.sh (ili
+    `sed -i --follow-symlinks`). Posle izmene: readlink -f.
+    Napomena: `DRY=1 bash -c '...'` NE testira skript, samo snippet.
+
+## dry-run dokazan na grani brisanja - 24.11 12:58
+    Kopija skripta sa cap 800 nad Data 849:
+      rezim: DRY-RUN - nista se ne brise
+      prune: (dry-run) .../Data 849MB > 800MB - obrisao bih ~49MB
+      849 -> 849   (nista obrisano), rc=0
+    Ovo je prvi test koji razlikuje "dry-run radi" od "slucajno no-op jer
+    je kes ispod praga". Prethodni dry-runovi bili su no-op (Data 110/41MB).
+
+## dry-run verifikovan 24.11 12:57
+    --dry-run: pre 1.2GiB = posle 1.2GiB, Data 849MB, rc=0.
+    tmpfiles --dry-run: "Would remove .../mozilla/firefox" + "Would restore
+    atime/mtime on .../mozilla" -> potvrdjuje futimens/restore ponasanje.
+    mozilla/firefox je mrtva kes (firedragon se koristi), deo od 210MB.
+
+## QUIT_SPOTIFY - cap aktivira tako sto ugasi klijent
+    Linija 77: skript gasi Spotify pre prune_to (osim --keep-spotify).
+    => cache-clean.timer u 00:12 moze da prekine reprodukciju ako Data
+    pređe cap. Sa storage.size=768 i Data ~780 do toga ne dolazi.
