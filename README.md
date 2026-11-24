@@ -180,3 +180,17 @@
     Zato je storage.size=768 primarni mehanizam, skript je rezerva.
     CHECKPOINT: 25.11 i 26.11 izmeriti Data. Ako ostaje >850 dve sesije ->
     vratiti A ili preci na C (tajmer u 05:00).
+
+## 24.11.2026 - unit-i su sada SYMLINKOVI (ne kopije)
+    ~/.config/systemd/user/cache-clean.service -> ~/dotfiles/config/systemd/user/cache-clean.service
+    ~/.config/systemd/user/cache-clean.timer   -> ~/dotfiles/config/systemd/user/cache-clean.timer
+    Zasto: instalirani unit je bio kopija od 21.11 i `daemon-reload` je
+    ucitavao star ExecStart bez --keep-spotify. Isti obrazac kao razbijeni
+    symlink skripta - dve kopije, izmena u jednoj, izvrsava se druga.
+    PRAVILO: menjati SAMO ~/dotfiles/config/systemd/user/*; `sed -i` na
+    symlinku bi ga razbio (pravi temp + rename).
+    Posle svake izmene unit-a: systemctl --user daemon-reload, pa
+      systemctl --user show -p ExecStart cache-clean.service | tr ';' '\n' | grep argv
+    Backups: ~/cache-clean.service.bak-2026-11-24, ~/cache-clean.timer.bak-2026-11-24
+    Verifikovano 13:05: argv[] sadrzi --keep-spotify; tmpfiles NE dira
+    Spotify (nema te putanje u cache.conf) -> samo prune_to dira Data.
