@@ -98,12 +98,12 @@ log "pre: $(hsz "$before")"
 
 if (( DRY )); then
   log "DRY-RUN - nista se ne brise"
-  prune_to "$CACHE/spotify/Data"           800
+  prune_to "$CACHE/spotify/Data"           850
   prune_to "$CACHE/spotify/Browser/Cache"  150
   rc=0
   systemd-tmpfiles --user --clean --dry-run || rc=$?
 else
-  prune_to "$CACHE/spotify/Data"           800
+  prune_to "$CACHE/spotify/Data"           850
   prune_to "$CACHE/spotify/Browser/Cache"  150
   rc=0
   systemd-tmpfiles --user --clean || rc=$?

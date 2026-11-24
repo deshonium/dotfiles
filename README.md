@@ -96,3 +96,43 @@
     Dry-run potvrdio: nula kandidata u Data (najstariji 21.11 11:50,
     prag istice 24.11 11:50). Jedini kandidat: GPUPersistentCache/GPUCache.
     prune_to (800MB) ostaje rezerva - relevantan samo ako 3 dana >800MB.
+
+## 24.11.2026 - prune_to prvi put obrisao u produkciji
+    04:20:45 (boot catch-up, Spotify nije radio):
+      Data 1023MB > 800MB - brisem najstarije ~223MB
+      Data 1023MB -> 799MB
+    Najstariji preziveli 23.11 11:20 = prvi posle odsecenog repa; fajlovi
+    21.11-23.11 nestali SU zbog prune_to, ne zbog Spotify evikcije.
+
+## zasto 33MB vs 23MB u istom runu - RESENO
+    Skript sam poziva `systemd-tmpfiles --user --clean` (linija 113)
+    IZMEDJU prune_to poziva i sumarne linije (117).
+    Redosled: prune_to Data -> prune_to Browser/Cache (33MB OK) ->
+    tmpfiles (bcm:1d brise ~10MB iz Browser/Cache) -> summary (23MB).
+    Obe linije su tacne, ali mere razlicite tacke u vremenu.
+    Zato standalone tmpfiles servis u 04:27:28 nije nasao nista.
+    Hipoteze --apparent-size i "prune meri roditelja" su POGRESNE:
+    du_m() i prune_to koriste isti `du -sm` na istoj putanji.
+
+## Spotify postuje storage.size
+    Data 89 min (11:15-12:44) stajao na tacno 1042 MiB = 1.018 GiB uz
+    storage.size=1024 -> klijent ima LRU plafon na storage.size.
+    Odluka: storage.size=768, ISPOD nase granice -> Data ~780, churn 0.
+    ZAMKA: klijent upisuje prefs pri izlasku. Menjati samo dok Spotify
+    NE radi; posle prve sesije proveriti da li je 768 ostalo.
+
+## cap Data: 800 -> 850 (24.11.2026)
+    storage.size=768 ocekivano slece na ~780MB (+overhead blokova).
+    Sa cap 800 rezerva ~20MB (tesno); 850 daje ~70MB i cap postaje mrtva
+    litera ako 768 radi. Ako 768 ne radi, Data ~1024 -> odseca 174MB/dan
+    (manje od 224 sa 800). 850 je ispod 1024, pa cap i dalje ima smisla.
+    Promenjena OBA call site-a: 101 (dry-run) i 106 (pravi run).
+
+## exit code nosi dva ishoda
+    `exit "$rc"` (121) je rc od systemd-tmpfiles, ne od prune_to.
+    Ako tmpfiles padne, servis je failed iako je brisanje uspelo.
+
+## merne jedinice u logu
+    du_m(), prune_to: du -sm (zauzeti blokovi, MiB) - uporedivo.
+    total(): du -sb po 6 direktorijuma, apparent bajtovi -> "pre:"/"posle:"
+    NIJE uporedivo sa per-dir MiB linijama.
