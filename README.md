@@ -170,3 +170,13 @@
     Linija 77: skript gasi Spotify pre prune_to (osim --keep-spotify).
     => cache-clean.timer u 00:12 moze da prekine reprodukciju ako Data
     pređe cap. Sa storage.size=768 i Data ~780 do toga ne dolazi.
+
+## 24.11.2026 - odluka B: --keep-spotify u timer unit-u
+    Razlog: linija 77 gasi Spotify da bi primenio cap; tajmer u 00:12 moze
+    prekinuti reprodukciju. Data 849 vs cap 850 = rezerva 1MB.
+    Sa --keep-spotify: prune_to se preskace dok Spotify radi ("Spotify radi
+    - preskacem"), pa cap deluje samo kad je klijent zatvoren.
+    CENA: ako Spotify nikad ne zatvorite, skript ne prune-uje Data.
+    Zato je storage.size=768 primarni mehanizam, skript je rezerva.
+    CHECKPOINT: 25.11 i 26.11 izmeriti Data. Ako ostaje >850 dve sesije ->
+    vratiti A ili preci na C (tajmer u 05:00).

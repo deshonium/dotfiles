@@ -4,6 +4,6 @@ Documentation=file://%h/dotfiles/README.md
 
 [Service]
 Type=oneshot
-ExecStart=%h/.local/bin/cache-clean.sh
+ExecStart=%h/.local/bin/cache-clean.sh --keep-spotify
 Nice=10
 IOSchedulingClass=idle
