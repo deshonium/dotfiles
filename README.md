@@ -208,3 +208,12 @@
     nove fajlove - to je normalno LRU ponasanje, ne problem.
     CHECKPOINT: 25.11 i 26.11 proveriti da Data ostaje ~768 (ne raste ka
     850). Ako raste -> storage.size se ne postuje dosledno, javiti.
+
+## 24.11.2026 - PATH dedupe izdvojen u config/shell/path.sh
+    ~/.bashrc: PATH blok (2x izvrsen, tipfeler /.local, mrtav .cargo/bin)
+    sveden na jedan source; dedupe (awk !seen) na kraju .bashrc.
+    .bash_profile: dedupe uklonjen (suvisan - samo sourcuje .bashrc).
+    Izvor duplikata: ~/.config/envman/PATH.env (prepend .local/bin),
+    izvrsava se POSLE starog dedupe-a -> zato je bio nedelotvoran.
+    Verifikovano: env -i ... bash -l / -i -> .local/bin = 1 u oba moda.
+    Napomena: ~/.bashrc i ~/.bash_profile NISU u repou (22K, masinski).
