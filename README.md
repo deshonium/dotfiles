@@ -194,3 +194,17 @@
     Backups: ~/cache-clean.service.bak-2026-11-24, ~/cache-clean.timer.bak-2026-11-24
     Verifikovano 13:05: argv[] sadrzi --keep-spotify; tmpfiles NE dira
     Spotify (nema te putanje u cache.conf) -> samo prune_to dira Data.
+
+## 24.11.2026 - storage.size=768 DOKAZANO (13:07)
+    Spotify pokrenut 13:00; u 13:07: du -sm Data = 768, prefs storage.size=768.
+    Evikcija 849 -> 768 za ~7 min, tacno na cap (nije lenja kako se mislilo).
+    => Spotify interni LRU drzi Data na 768; skript cap 850 se NIKAD ne
+    dostize (rezerva 82MB), prune_to uvek loguje "OK".
+    => churn eliminisan: skript ne brise, Spotify eviktira po LRU, nema
+    re-download ciklusa. Cap 850 ostaje kao buffer, ne kao mehanizam.
+    => --keep-spotify ostaje kao sigurnost (nula cene), ali u praksi
+    nikad nece biti aktiviran jer prune_to nikad ne dodje do brisanja.
+    NAPOMENA: Data na tacno 768 znaci da Spotify stalno eviktira dok pise
+    nove fajlove - to je normalno LRU ponasanje, ne problem.
+    CHECKPOINT: 25.11 i 26.11 proveriti da Data ostaje ~768 (ne raste ka
+    850). Ako raste -> storage.size se ne postuje dosledno, javiti.
